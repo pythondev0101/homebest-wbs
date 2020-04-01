@@ -13,6 +13,9 @@ login_manager.login_view = 'bp_auth.login'
 system_models = [
     # STRUCTURE: {Model name:{icon,functions:{Label name:link}}}
     {'Users':{'icon':'fa-users','functions':{'View users':'bp_auth.index',}}},
+    {'Customers': {'icon': 'fa-users', 'functions': {'View customers': 'bp_auth.index', }}},
+    {'Billing': {'icon': 'fa-usd', 'functions': {'View customers': 'bp_auth.index', }}},
+    {'Payments': {'icon': 'fa-money', 'functions': {'View customers': 'bp_auth.index', }}},
 ]
 """--------------END--------------"""
 
@@ -30,12 +33,14 @@ def create_app():
         from app import core
         from app import auth
         from app import admin
+        from app import wbs
         """--------------END--------------"""
 
         """EDITABLE: REGISTER HERE THE MODULE BLUEPRINTS"""
-        app.register_blueprint(core.bp_core,url_prefix='/')
-        app.register_blueprint(auth.bp_auth,url_prefix='/auth')
-        app.register_blueprint(admin.bp_admin,url_prefix='/admin')
+        app.register_blueprint(core.bp_core, url_prefix='/')
+        app.register_blueprint(auth.bp_auth, url_prefix='/auth')
+        app.register_blueprint(admin.bp_admin, url_prefix='/admin')
+        app.register_blueprint(wbs.bp_wbs, url_prefix='/wbs')
         """--------------END--------------"""
 
         db.create_all()
