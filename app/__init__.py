@@ -23,6 +23,15 @@ system_modules = {'Administrator':
                         }
                   }
 
+# GLOBAL VARIABLE CONTEXT FOR URL RETURN
+context = {
+    'title': '',
+    'system_modules': system_modules,
+    'module':'',
+    'active': '',
+    'forms': {},
+    'modal': False,
+}
 
 def create_app():
     app = Flask(__name__, instance_relative_config=False)
