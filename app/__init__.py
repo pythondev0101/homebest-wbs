@@ -10,15 +10,15 @@ login_manager.login_view = 'bp_auth.login'
 
 # TODO: FOR FUTURE change this to automatic values eg. system_models=[USER OBJECT]
 """ EDITABLE: IMPORT HERE THE SYSTEM MODULES and their models/attributes """
-system_modules = {'Administrator':
-                      {'icon': 'fa-home', 'link': 'bp_admin.index',
+system_modules = {'admin':
+                      {'icon': 'fa-home', 'link': 'bp_admin.index','description':'Administrator',
                        'models': {
                            'Users': {'icon': 'fa-users', 'functions': {'View users': 'bp_auth.index'}}}},
-                  'Water Billing':
-                       {'icon': 'fa-tint', 'link': 'bp_wbs.index',
+                  'wbs':
+                       {'icon': 'fa-tint', 'link': 'bp_wbs.index','description': 'Water Billing',
                         'models': {
-                            'Customers': {'icon': 'fa-users', 'functions': {'View customers': 'bp_auth.index'}},
                             'Billing': {'icon': 'fa-usd', 'functions': {'View customers': 'bp_auth.index'}},
+                            'Customers': {'icon': 'fa-users', 'functions': {'View customers': 'bp_auth.index'}},
                             'Payments': {'icon': 'fa-money', 'functions': {'View customers': 'bp_auth.index'}}}
                         }
                   }

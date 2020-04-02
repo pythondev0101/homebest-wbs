@@ -2,22 +2,22 @@ from app.wbs import bp_wbs
 from .models import Customer
 from flask_login import login_required
 from flask import render_template
-from . import wbs_templates,wbs_urls
-from app import system_models,system_modules
+from app import context
+from . import wbs_templates, wbs_urls
 
 
-# GLOBAL VARIABLE CONTEXT FOR URL RETURN
-context = {
-    'title': 'Water Billing',
-    'system_models': system_models,
-    'modules': system_modules,
-    'active': 'wbs',
-    'forms': {},
-}
+def change_context(view):
+    context['module'] = 'wbs'
+    if view == 'index':
+        context['title'] = 'Water Billing'
+        context['active'] = ''
+        context['modal'] = True
+
 
 @bp_wbs.route('/',methods=['GET'])
 @login_required
 def index():
+    change_context('index')
     return render_template(wbs_templates['index'],context=context)
 
 
