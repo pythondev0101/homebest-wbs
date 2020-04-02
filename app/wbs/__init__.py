@@ -8,6 +8,11 @@ wbs_urls = {
     'index': 'bp_wbs.index',
 }
 
+# TEMPLATES DICTIONARY
+wbs_templates = {
+    'index': 'wbs/wbs_index.html',
+}
+
 context = {
     'title': 'Users',
     'system_models': system_models,
