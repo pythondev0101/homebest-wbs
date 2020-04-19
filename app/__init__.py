@@ -37,7 +37,7 @@ def create_app():
         """--------------END--------------"""
 
         """EDITABLE: INCLUDE HERE YOUR MODULE Admin models FOR ADMIN TEMPLATE"""
-        modules = [admin.AdminModule]
+        modules = [admin.AdminModule, wbs.WBSModule]
         """--------------END--------------"""
 
         for module in modules:

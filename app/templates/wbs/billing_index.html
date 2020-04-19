@@ -8,7 +8,7 @@
                     <i class="pe-7s-drawer icon-gradient bg-happy-itmeo"> </i>
                 </div>
                 <div>
-                    Customers
+                    Billings
                     <div class="page-title-subheading">
                         message
                     </div>
@@ -25,21 +25,24 @@
                     <table id="index_table" class="mb-0 table table-hover">
                         <thead>
                             <tr>
-                                <th>First Name</th>
-                                <th>Last Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
+                                <th>Bill No.</th>
+                                <th>Customer Name</th>
+                                <th>Meter No.</th>
+                                <th>Amount Due</th>
+                                <th>Period From</th>
+                                <th>Period To</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for customer in context['customers'] %}
-                            <tr id="{{ user.id }}">
-                                <th scope="row">{{ customer.id }}</th>
-                                <td>{{ customer.fname }}</td>
-                                <td>{{ customer.lname }}</td>
-                                <td>{{ customer.email }}</td>
-                                <td>{{ customer.phone }}</td>
-                                <td></td>
+                            {% for bill in context['bills'] %}
+                             <tr id="{{ bill.id }}">
+<!--                            <tr id="{{ user.id }}" onclick="row_click(this)" data-toggle="modal" data-id="1" data-target="#userModal">-->
+<!--                                <param id="{{ user.id }}" name="{{ url_for('bp_auth.user_edit',user_id=user.id) }}">-->
+                                <th scope="row">{{ bill.id }}</th>
+                                <td>{{ user.fname, user.lname }}</td>
+                                <td>{{ bill.meter_no }}</td>
+                                <td>{{ bill.amount_due }}</td>
+                                <td>{{ bill.period_from }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -88,4 +91,3 @@
         {% endif %}
     {% endwith %}
 {% endblock %}
-
