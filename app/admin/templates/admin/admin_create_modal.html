@@ -1,0 +1,150 @@
+{% with modal = context['create_modal'] %}
+<div id="create_modal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog"
+     aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="form_create" action="{{ url_for(modal['create_url']) }}" class="needs-validation" method="POST"
+                  novalidate>
+                {{ modal['create_form'].csrf_token }}
+                <div class="modal-header">
+                    <h5 class="modal-title">Add new {{ modal['title'] }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="main-card mb-3 card">
+                        <div class="card-body">
+                            {% for row in modal['fields'] %}
+                            <div class="form-row">
+                                {% for field in row %}
+                                {% if field.type == 'select' %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="position-relative form-group">
+                                        <label for="{{ field.name }}" class="">{{ field.label }}</label>
+                                        <select name="{{ field.name }}" id="{{ field.name }}" class="form-control">
+                                            <option></option>
+                                            {% for odata in field.data %}
+                                            <option value="{{ odata.id }}">{{ odata.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="valid-feedback">
+                                            Looks good!
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            Please provide a valid {{ field.label }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ field.name }}">{{ field.label }}</label>
+                                    <input style="font-weight: bold;" type="{{ field.type }}" class="form-control" id="{{ field.name }}"
+                                           name="{{ field.name }}"
+                                           placeholder="{{ field.label }}" required>
+                                    <div id="{{ field.name }}-valid-feedback" class="valid-feedback">
+                                        Looks good!
+                                    </div>
+                                    <div id="{{ field.name }}-invalid-feedback" class="invalid-feedback">
+                                        Please provide a valid {{ field.label }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                            <script>
+                                    // Example starter JavaScript for disabling form submissions if there are invalid fields
+                                    (function() {
+                                        'use strict';
+                                        window.addEventListener('load', function() {
+                                            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                                            var forms = document.getElementsByClassName('needs-validation');
+                                            // Loop over them and prevent submission
+                                            var validation = Array.prototype.filter.call(forms, function(form) {
+                                                form.addEventListener('submit', function(event) {
+                                                    if (form.checkValidity() === false) {
+                                                        event.preventDefault();
+                                                        event.stopPropagation();
+                                                    }
+                                                    form.classList.add('was-validated');
+                                                }, false);
+                                            });
+                                        }, false);
+                                    })();
+                            </script>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endwith %}
+
+{% if context['active'] == 'Users' %}
+<script>
+    $(document).ready(function(){
+        $("#username").change(function(){
+            var csrf_token = "{{ csrf_token() }}";
+            var username = document.getElementById("username").value;
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                    }
+                }
+            });
+            $.ajax({
+                url: "/auth/username_check",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({'username': username}),
+                contentType: "application/json; charset=utf-8",
+                success: function(data) {
+                    if(data.result == 1){
+                        $("#username-invalid-feedback").text("Please provide a valid Username");
+                        document.getElementById("username-invalid-feedback").style.display = "none";
+                        document.getElementById("username-valid-feedback").style.display = "block";
+                    }else{
+                        $("#username-invalid-feedback").text("Username is already taken.");
+                        document.getElementById("username-valid-feedback").style.display = "none";
+                        document.getElementById("username-invalid-feedback").style.display = "block";
+                    }
+                }
+            });
+        });
+        $("#email").change(function(){
+            var csrf_token = "{{ csrf_token() }}";
+            var email = document.getElementById("email").value;
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                    }
+                }
+            });
+            $.ajax({
+                url: "/auth/_email_check",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({'email': email}),
+                contentType: "application/json; charset=utf-8",
+                success: function(data) {
+                    if(data.result == 1){
+                        $("#email-invalid-feedback").text("Please provide a valid Email");
+                        document.getElementById("email-invalid-feedback").style.display = "none";
+                    }else{
+                        $("#email-invalid-feedback").text("Email is already taken.");
+                        document.getElementById("email-invalid-feedback").style.display = "block";
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endif %}

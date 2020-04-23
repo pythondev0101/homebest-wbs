@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="Content-Language" content="en">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>{{ context['title'] }}</title>
+    <title>{{ title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" />
     <meta name="description" content="This is an example dashboard created using build-in elements and components.">
     <meta name="msapplication-tap-highlight" content="no">
@@ -61,7 +61,20 @@
     </div>
 <script type="text/javascript" src="{{ url_for('static', filename='js/lib/main.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/homebest.js') }}"></script>
-
+<script type="text/javascript" src="{{ url_for('static', filename='js/lib/jquery.min.js') }}"></script>
+<script>
+    (function() {
+      var header_color = document.getElementById('{{ context['header_color'] }}');
+      var sidebar_color = document.getElementById('{{ context['sidebar_color'] }}');
+      var fixed_footer = document.getElementById('chkbox_fixed_footer');
+      setTimeout(function() {
+        header_color.click();
+        sidebar_color.click();
+        fixed_footer.click();
+      }, 100);
+    })();
+    </script>
+    
     {% block scripts %}{% endblock %}
 
     {% block toast %}{% endblock %}
@@ -71,9 +84,14 @@
 
 <!--INCLUDE HERE: MODALS-->
 {% block modals %}
-{% if context['active'] == 'Users' %}
-    {% if context['modal'] %}
-        {% include 'auth/user_modals.html' %}
+    {% if create_modal %}
+        {% include create_modal %}
     {% endif %}
-{% endif %}
+    {% if view_modal %}
+        {% include view_modal %}
+    {% endif %}
+
+    {% if extra_modal %}
+        {% include extra_modal %}
+    {% endif %}
 {% endblock %}

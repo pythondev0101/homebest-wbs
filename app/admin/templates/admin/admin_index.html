@@ -1,0 +1,168 @@
+{% extends "admin/admin_base.html" %}
+{% block content %}
+<div class="app-main__inner">
+    <div class="app-page-title">
+        <div class="page-title-wrapper">
+            <div class="page-title-heading">
+                <div class="page-title-icon">
+                    <i class="pe-7s-drawer icon-gradient bg-happy-itmeo"> </i>
+                </div>
+                <div>
+                    {{ index_title }}
+                    <div class="page-title-subheading">
+                        {{ index_message }}
+                    </div>
+                </div>
+            </div>
+            {% block actions %}
+            {% if action %}
+            {% include action %}
+            {% endif %}
+            {% endblock %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="main-card mb-3 card">
+                <div class="card-body">
+                    <table id="index_table" class="mb-0 table table-hover table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            {% for field in table_fields %}
+                            <th>{{ field.upper() }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {% for model in models %}
+                        {% if view_modal %}
+                        <tr class='item' id="{{ model[0] }}" onclick="row_click(this, '{{context['active']}}')" data-toggle="modal" data-target="#viewModal">
+                            <param id="{{ model[0] }}" name="{{ url_for(edit_url,oid=model[0]) }}">
+                        {% else %}
+                        <tr class='item'>
+                        {% endif %}
+                            {% for values in model %}
+                            {% if loop.index > 1 %}
+                            <td style="font-weight: bold;">{{ values }}</td>
+                            {% endif %}
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block inner_footer %}
+<div class="app-footer-left">
+    <nav class="" aria-label="Page navigation example">
+        <ul class="pagination">
+            {% if prev_url %}
+            <li class="page-item">
+                <a href="{{ prev_url }}" class="page-link" aria-label="Previous">
+                    <span aria-hidden="true">Previous</span>
+                    <span class="sr-only">Previous</span></a>
+            </li>
+            {% endif %}
+
+            {% if next_url %}
+            <li class="page-item">
+                <a href="{{ next_url }}" class="page-link" aria-label="Next">
+                    <span aria-hidden="true">Next</span>
+                    <span class="sr-only">Next</span></a></li>
+        </ul>
+        {% endif %}
+    </nav>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#btndelete").click(function(){
+            if($('#btndelete').text()=='Delete'){
+                $('#nav_action_btns').after("<button id='btn_confirm_delete' type='button' tabindex='1' class='dropdown-item'>Confirm Delete</button>");
+                $('#btndelete').html("Cancel");
+                $("tr").removeAttr("data-toggle");
+                $("tr").find("th:last").after('<th>DELETE</th>');
+                $("tr").find("td:last").after("<td><input class='chkbox' type='checkbox'></td>");
+                var ids = [];
+                var csrf_token = "{{ csrf_token() }}";
+                $("#btn_confirm_delete").click(function(){
+                    $("tr.item").each(function() {
+                        var check = $(this).find("input.chkbox").is(':checked');
+                        if(check){
+                            ids.push(this.id)
+                        }
+                    });
+                    $.ajaxSetup({
+                        beforeSend: function(xhr, settings) {
+                            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                            }
+                        }
+                    });
+                    $.ajax({
+                        url: "/auth/_users_delete",
+                        type: "POST",
+                        dataType: "json",
+                        data: JSON.stringify({'ids': ids}),
+                        contentType: "application/json; charset=utf-8",
+                        success: function(data) {
+                            if(data.result == 2){
+                                alert("Must check some user!");
+                            }else{
+                                location.reload();
+                            }
+                        }
+                    });
+                });
+            }else{
+                $("#btn_confirm_delete").remove();
+                $('#btndelete').html("Delete");
+                $("tr").attr("data-toggle","modal");
+                $("tr").find("th:last").remove();
+                $("tr").find("td:last").remove();
+            }
+        });
+    });
+
+</script>
+{% endblock %}
+
+{% block toast %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div id="toast-container" class="toast-top-center">
+    {% for message in messages %}
+    <div class="toast toast-success" aria-live="polite">
+        <div class="toast-progress" style="width: 0%;"></div>
+        <button type="button" class="toast-close-button" role="button" onclick="close_toast()">×</button>
+        <div class="toast-title">Saved!</div>
+        <div class="toast-message">{{ message }}</div>
+    </div>
+</div>
+
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+{% if context['errors'] %}
+<div id="toast-container" class="toast-top-center">
+    {% for key,error in context['errors'].items() %}
+    <div class="toast toast-error" aria-live="polite">
+        <div class="toast-progress" style="width: 0%;"></div>
+        <button type="button" class="toast-close-button" role="button" onclick="close_toast()">×</button>
+        <div class="toast-title">Error!</div>
+        <div class="toast-message">{{ key, error }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
