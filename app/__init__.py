@@ -39,20 +39,23 @@ def create_app(config_name):
         from app.core import bp_core
         from app.auth import bp_auth
         from app.admin import bp_admin
+        from app.wbs import bp_wbs
         """--------------END--------------"""
 
         """EDITABLE: REGISTER HERE THE MODULE BLUEPRINTS"""
         app.register_blueprint(bp_core, url_prefix='/')
         app.register_blueprint(bp_auth, url_prefix='/auth')
         app.register_blueprint(bp_admin, url_prefix='/admin')
+        app.register_blueprint(bp_wbs,url_prefix='/wbs')
         """--------------END--------------"""
         db.create_all()
         db.session.commit()
 
         """EDITABLE: INCLUDE HERE YOUR MODULE Admin models FOR ADMIN TEMPLATE"""
         from app.admin.admin import AdminModule
+        from app.wbs.wbs import WBSModule
 
-        modules = [AdminModule]
+        modules = [AdminModule,WBSModule]
         """--------------END--------------"""
         create_modules(modules)
 

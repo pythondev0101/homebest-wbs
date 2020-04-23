@@ -1,10 +1,11 @@
 """ APP IMPORTS  """
 from app import db
 from app.core.models import Base,CoreProvince,CoreCity,CoreCustomer
+from app.admin.models import Admin
 """--------------END--------------"""
 
 
-class Bill(Base):
+class Bill(Base,Admin):
     __tablename__ = 'wbs_bill'
     meter_no = db.Column(db.Integer,nullable=False)
     customer_id = db.Column(db.Integer,db.ForeignKey('wbs_customer.id'))
@@ -14,8 +15,13 @@ class Bill(Base):
     period_to = db.Column(db.Date,nullable=False)
     due_date = db.Column(db.Date,nullable=False)
 
+    model_name = 'Billing'
+    model_icon = 'pe-7s-calculator'
+    model_description = 'Billing'
+    functions = {'View all': 'bp_wbs.index'}
 
-class Payment(Base):
+
+class Payment(Base,Admin):
     __tablename__ = 'wbs_payment'
     bill_id = db.Column(db.Integer,db.ForeignKey('wbs_bill.id'))
     bill = db.relationship('Bill',cascade='all,delete',backref="payment")
@@ -26,18 +32,28 @@ class Payment(Base):
     payment_type_id = db.Column(db.Integer,db.ForeignKey('wbs_payment_type.id'))
     payment_type = db.relationship('PaymentType')
 
+    model_name = 'Payment'
+    model_icon = 'pe-7s-cash'
+    model_description = 'Payments'
+    functions = {'View users': 'bp_auth.index'}
 
-class PaymentType(Base):
+
+class PaymentType(Base,Admin):
     __tablename__ = 'wbs_payment_type'
     name = db.Column(db.String(64),nullable=False)
 
 
-class Customer(CoreCustomer):
+class Customer(CoreCustomer,Admin):
     __tablename__ = 'wbs_customer'
     city_id = db.Column(db.Integer, db.ForeignKey('wbs_city.id'), nullable=False)
     city = db.relationship("City")
     province_id = db.Column(db.Integer, db.ForeignKey('wbs_province.id'), nullable=False)
     province = db.relationship("Province")
+    
+    model_name = 'Customers'
+    model_icon = 'pe-7s-users'
+    model_description = 'Customers'
+    functions = {'View all': 'bp_wbs.customer_index'}
 
 
 class City(CoreCity):

@@ -5,42 +5,17 @@ from flask import render_template, request, current_app, url_for
 from app import context
 from . import wbs_templates, wbs_urls
 from .forms import BillCreateForm
+from app.admin.routes import admin_index, admin_edit
 
 
-def change_context(view):
-    context['module'] = 'wbs'
-    if view == 'index':
-        context['title'] = 'Water Billing'
-        context['active'] = 'Billing'
-        context['modal'] = True
-    if view == 'customer_index':
-        context['title'] = 'Water Billing'
-        context['active'] = 'Customers'
-        context['modal'] = True
-
+context['module'] = 'wbs'
 
 @bp_wbs.route('/billing',methods=['GET'])
 @login_required
 def index():
-    page = request.args.get('page', 1, type=int)
-    data_per_page = current_app.config['DATA_PER_PAGE']
-    bills = Bill.query.paginate(page, data_per_page, False)
-    bill_create_form = BillCreateForm()
-    next_url = url_for(wbs_urls['index'], page=bills.next_num) \
-        if bills.has_next else None
-    prev_url = url_for(wbs_urls['index'], page=bills.prev_num) \
-        if bills.has_prev else None
-    customers = Customer.query.all()
-
-    # ADDITIONAL CONTEXT
-    context['bills'] = bills.items
-    context['forms'] = {'BillCreateForm': bill_create_form}
-    context['next_url'] = next_url
-    context['prev_url'] = prev_url
-    context['data_per_page'] = data_per_page
-    context['customers'] = customers
-    change_context('index')
-    return render_template(wbs_templates['index'],context=context)
+    form = BillCreateForm()
+    fields = [Bill.id,Bill.customer_id,Bill.meter_no,Bill.amount_due,Bill.period_from,Bill.period_to]
+    return admin_index(Bill,fields=fields, form=form,url=wbs_urls['index'],create_modal=False,template="wbs/wbs_index.html")
 
 
 @bp_wbs.route('/customers', methods=['GET'])
