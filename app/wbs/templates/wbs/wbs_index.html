@@ -1,10 +1,5 @@
 {% extends "admin/admin_index.html" %}
+
 {% block sidebar %}
     {% include 'wbs/wbs_sidebar.html' %}
-{% endblock %}
-
-{% block modals %}
-{% if context['modal'] %}
-    {% include 'wbs/wbs_modals.html' %}
-{% endif %}
 {% endblock %}
