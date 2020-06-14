@@ -12,7 +12,7 @@ def get_database():
 
 
 class Config(object):
-    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SECRET_KEY = "71SJm04QI6"
     CORS_HEADERS = 'Content-Type'
     DATA_PER_PAGE = 7
 
