@@ -23,8 +23,9 @@
                                 <div class="col-md-{{ modal['fields_sizes'][row_counter.index-1] }} mb-3">
                                     <div class="position-relative form-group">
                                         <label for="{{ field.name }}" class="">{{ field.label.upper() }}</label>
-                                        <select name="{{ field.name }}" id="{{ field.name }}" class="form-control">
-                                            <option></option>
+                                        <select name="{{ field.name }}" id="{{ field.name }}" class="form-control {% if field.required %}input_required{% endif %}"
+                                        {% if field.required %}required{% endif %}>
+                                            <option value="">Choose...</option>
                                             {% for odata in field.data %}
                                             <option value="{{ odata.id }}">{{ odata.name }}</option>
                                             {% endfor %}
@@ -40,9 +41,10 @@
                                 {% elif field.type == 'numeric' %}
                                 <div class="col-md-{{ modal['fields_sizes'][row_counter.index-1] }} mb-3">
                                     <label for="{{ field.name }}">{{ field.label.upper() }}</label>
-                                    <input style="font-weight: bold;" type="number" class="form-control" id="{{ field.name }}"
-                                           name="{{ field.name }}" placeholder="Php" step="0.01" min="0"
-                                           placeholder="{{ field.label.lower() }}" required>
+                                    <input type="number" class="form-control {% if field.required %}input_required{% endif %}" 
+                                           id="{{ field.name }}"
+                                           name="{{ field.name }}" placeholder="{{ field.placeholder }}" step="0.01" min="0"
+                                           {% if field.required %}required{% endif %}>
                                     <div id="{{ field.name }}-valid-feedback" class="valid-feedback">
                                         Looks good!
                                     </div>
@@ -53,9 +55,11 @@
                                 {% else %}
                                 <div class="col-md-{{ modal['fields_sizes'][row_counter.index-1] }} mb-3">
                                     <label for="{{ field.name }}">{{ field.label.upper() }}</label>
-                                    <input style="font-weight: bold;" type="{{ field.type }}" class="form-control" id="{{ field.name }}"
+                                    <input type="{{ field.type }}" class="form-control {% if field.required %}input_required{% endif %}" 
+                                           id="{{ field.name }}"
                                            name="{{ field.name }}"
-                                           placeholder="{{ field.label.lower() }}" required>
+                                           placeholder="{{ field.placeholder }}"
+                                           {% if field.required %}required{% endif %}>
                                     <div id="{{ field.name }}-valid-feedback" class="valid-feedback">
                                         Looks good!
                                     </div>

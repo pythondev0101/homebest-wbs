@@ -5,7 +5,7 @@
         <div class="page-title-wrapper">
             <div class="page-title-heading">
                 <div class="page-title-icon">
-                    <i class="pe-7s-drawer icon-gradient bg-happy-itmeo"> </i>
+                    <i class="{{ rendered_model.model_icon }} icon-gradient bg-happy-itmeo"></i>
                 </div>
                 <div>
                     {{ index_title }}
@@ -58,7 +58,7 @@
 </div>
 {% endblock %}
 
-{% block inner_footer %}
+<!-- {% block inner_footer %}
 <div class="app-footer-left">
     <nav class="" aria-label="Page navigation example">
         <ul class="pagination">
@@ -79,11 +79,20 @@
         {% endif %}
     </nav>
 </div>
-{% endblock %}
+{% endblock %} -->
 
 {% block scripts %}
 <script type="text/javascript">
     $(document).ready(function(){
+        var table = $('#index_table').DataTable({
+            "dom": 'rtip',
+            "pageLength": 8
+        });
+
+        $('.search-input').on('keyup', function () {
+            table.search(this.value).draw();
+        } );
+
         $("#btndelete").click(function(){
             if($('#btndelete').text()=='Delete'){
                 $('#nav_action_btns').after("<button id='btn_confirm_delete' type='button' tabindex='1' class='dropdown-item'>Confirm Delete</button>");
@@ -139,7 +148,7 @@
                 if(document.body.contains(document.getElementById('view_edit_button'))){
                     var url = $(id).attr('value');
                     document.getElementById("view_edit_button").setAttribute("href", url);
-                    var fields = {{ context['create_modal']['js_fields'] | tojson }};
+                    var fields = {% if context['create_modal']['js_fields'] %} {{ context['create_modal']['js_fields'] | tojson }} {% endif %};
                     var ctr;
                     var field;
                     var field_id = $(this).attr('id');
@@ -169,14 +178,6 @@
                     }
                 }
             }
-            //if(document.body.contains(document.getElementById('view_edit_button'))){
-            //    var url = document.getElementById(row_obj.id).name;
-            //    document.getElementById("view_edit_button").setAttribute("href", url);
-            //}
-            //document.getElementById("view_fname").value = row_obj.cells[1].innerHTML;
-            //document.getElementById("view_lname").value = row_obj.cells[2].innerHTML;
-            //document.getElementById("view_username").value = row_obj.cells[0].innerHTML;
-            //document.getElementById("view_email").value = row_obj.cells[3].innerHTML;
         });
     });
 

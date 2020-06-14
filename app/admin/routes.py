@@ -14,19 +14,42 @@ from . import admin_templates
 """--------------END--------------"""
 
 from app import context
-from app.core.models import HomeBestModel
+from app.core.models import HomeBestModel,HomeBestModule
 from sqlalchemy import text
 from flask_cors import cross_origin
 from app import db
 
+# TODO: Para ito sa pag delete dito mag sstore index_url ng kung anong dinelete, 
+# issue to kapag rekta inopen yung edit page sa url address
+index_url = ""
+
 @bp_admin.route('/')
 @login_required
-def index():
-    # TODO: return total tables,users...
-    context['title'] = 'Admin'
-    context['active'] = 'main_dashboard'
-    context['module'] = 'admin'
-    return render_template(admin_templates['index'], context=context)
+def dashboard():
+    return admin_dashboard()
+
+
+@bp_admin.route('/apps')
+def apps():
+    context['active'] = 'apps'
+
+    modules = HomeBestModule.query.all()
+
+    return render_template('admin/admin_apps.html',context=context,title='Apps',modules=modules)
+
+
+@bp_admin.route('/delete/<string:delete_table>/<int:oid>',methods=['POST'])
+@login_required
+def delete(delete_table,oid):
+    try:
+        index_url = request.args.get('index_url')
+        query = "DELETE from {} where id = {}".format(delete_table,oid)
+        db.engine.execute(text(query))
+        flash('Deleted Successfully!','success')
+        return redirect(url_for(index_url))
+    except Exception as e:
+        flash(str(e),'error')
+        return redirect(request.referrer)
 
 
 @bp_admin.route('/_delete_data',methods=["POST"])
@@ -68,7 +91,7 @@ def get_view_modal_data():
         sql = text(query)
         row = db.engine.execute(sql)
         res = [x[0] for x in row]
-        resp = jsonify(result=res[0],column=column)
+        resp = jsonify(result=str(res[0]),column=column)
         resp.headers.add('Access-Control-Allow-Origin', '*')
         resp.status_code = 200
         return resp
@@ -79,92 +102,126 @@ def get_view_modal_data():
         return resp
 
 
-def admin_edit(form, fields_data, update_url, oid, modal_form=False, action=None, extra_modal=None , template="admin/admin_edit.html"):
-    # Note: fields_data is just temporary
-    # TODO: inherit flask form to get values in constructor
+def admin_edit(form, update_url, oid, modal_form=False, action="admin/admin_edit_actions.html", \
+    model=None,extra_modal=None , template="admin/admin_edit.html"):
     fields = []
     row_count = 0
-    field_count = 0
-    for row in form.edit_fields:
+    field_sizes = []
+
+    for row in form.edit_fields():
         fields.append([])
+        field_count = 0
+
         for field in row:
+
             if field.input_type == 'select':
-                data = field.data.query.all()
+                data = field.model.query.all()
+                # TODO: Dapat rektang AdminField nalang iaappend sa fields hindi na dictionary
                 fields[row_count].append(
                     {'name': field.name, 'label': field.label, 'type': field.input_type, 'data': data,
-                     'value': fields_data[field_count]})
+                     'value': field.data,'placeholder':field.placeholder,'required':field.required})
             else:
                 fields[row_count].append({'name': field.name, 'label': field.label, 'type': field.input_type,
-                                          'value': fields_data[field_count]})
+                                          'value': field.data,'placeholder':field.placeholder,'required':field.required})
             field_count = field_count + 1
+
+        if field_count <= 2:
+            field_sizes.append(6)
+        elif field_count >= 3:
+            field_sizes.append(4)
+
         row_count = row_count + 1
     context['edit_model'] = {
-        'fields': fields
+        'fields': fields,
+        'fields_sizes':field_sizes,
     }
 
+    if model:
+        model_name = model.model_name
+        context['create_modal']['title'] = model_name
+        context['active'] = model_name
+        delete_table = model.__tablename__
+
+    query1 = HomeBestModel.query.filter_by(name=model_name).first()
+
+    if query1:
+        check_module = HomeBestModule.query.get(query1.module_id)
+        context['module'] = check_module.name
+    
     return render_template(template, context=context, form=form, update_url=update_url,
-                           oid=oid,modal_form=modal_form,edit_title=form.edit_title,action=action,extra_modal=extra_modal)
+                           oid=oid,modal_form=modal_form,edit_title=form.edit_title,delete_table=delete_table,
+                           action=action,extra_modal=extra_modal,index_url=index_url)
 
 
 def admin_index(*model, fields, url, form, action="admin/admin_actions.html",
                 create_modal="admin/admin_create_modal.html", view_modal="admin/admin_view_modal.html",
                 create_url="", edit_url="", template="admin/admin_index.html", active=""):
-    page = request.args.get('page', 1, type=int)
-    data_per_page = current_app.config['DATA_PER_PAGE']
+
     if len(model) == 1:
-        models = model[0].query.with_entities(*fields).paginate(page, data_per_page, False)
-        print(model[0].query.with_entities(*fields))
-    else:
-        models = model[0].query.outerjoin(model[1]).with_entities(*fields).paginate(page, data_per_page, False)
-        print(model[0].query.outerjoin(model[1]).with_entities(*fields))
+        models = model[0].query.with_entities(*fields).all()
+        print(models)
+    elif len(model) == 2: 
+        models = model[0].query.outerjoin(model[1]).with_entities(*fields).all()
+        print(models)
+    elif len(model) == 3:
+        query1 = db.session.query(model[0],model[1],model[2])
+        models = query1.outerjoin(model[1]).outerjoin(model[2]).with_entities(*fields).all()
+        print(models)
 
     table_fields = form.index_headers
     title = form.title
     index_title = form.index_title
     index_message = form.index_message
 
-    next_url = url_for(url, page=models.next_num) \
-        if models.has_next else None
-    prev_url = url_for(url, page=models.prev_num) \
-        if models.has_prev else None
-
     model_name = model[0].model_name
     context['create_modal']['title'] = model_name
     context['active'] = model_name
-    check_module = HomeBestModel.query.with_entities(HomeBestModel.module).filter_by(name=model_name).first()
-    if check_module:
-        context['module'] = check_module[0]
+    query1 = HomeBestModel.query.filter_by(name=model_name).first()
+
+    if query1:
+        check_module = HomeBestModule.query.get(query1.module_id)
+        context['module'] = check_module.name
     if active:
         context['active'] = active
 
     if create_url and create_modal:
-        set_modal(create_url, form)
+        _set_modal(create_url, form)
 
     table = model[0].__tablename__
 
+    global index_url
+    index_url = url
+
     return render_template(template, context=context,
-                           models=models.items, table_fields=table_fields,
-                           next_url=next_url, prev_url=prev_url,
+                           models=models, table_fields=table_fields,
                            index_title=index_title, index_message=index_message,
                            title=title, action=action, create_modal=create_modal,
-                           view_modal=view_modal, edit_url=edit_url,table=table)
+                           view_modal=view_modal, edit_url=edit_url,table=table,rendered_model=model[0])
 
 
-def set_modal(url, form):
+def _set_modal(url, form):
     fields = []
     row_count = 0
     field_sizes = []
     js_fields = []
-    for row in form.create_fields:
+    for row in form.create_fields():
         fields.append([])
         field_count = 0
         for field in row:
             if field.input_type == 'select':
-                data = field.data.query.all()
+                data = field.model.query.all()
+                # TODO: Dapat rektang AdminField nalang iaappend sa fields hindi na dictionary
                 fields[row_count].append(
-                    {'name': field.name, 'label': field.label, 'type': field.input_type, 'data': data})
+                    {
+                        'name': field.name, 'label': field.label, 'type': field.input_type, 
+                        'data': data,'placeholder':field.placeholder,'required':field.required
+                        })
             else:
-                fields[row_count].append({'name': field.name, 'label': field.label, 'type': field.input_type})
+                fields[row_count].append(
+                    {
+                        'name': field.name, 'label': field.label, 'type': field.input_type,
+                        'placeholder':field.placeholder,'required':field.required
+                        })
             field_count = field_count + 1
             js_fields.append(field.name)
         if field_count <= 2:
@@ -179,3 +236,27 @@ def set_modal(url, form):
         'fields_sizes':field_sizes,
         'js_fields':js_fields
     }
+
+
+def admin_dashboard(box1=None,box2=None,box3=None,box4=None):
+    from app.auth.models import User
+    if not box1:
+        box1 = DashboardBox("Total Modules","Installed",HomeBestModule.query.count())
+
+    if not box2:
+        box2 = DashboardBox("System Models","Total models",HomeBestModel.query.count())
+
+    if not box3:
+        box3 = DashboardBox("Users","Total users",User.query.count())
+    
+    context['active'] = 'main_dashboard'
+    context['module'] = 'admin'
+    return render_template("admin/admin_dashboard.html", context=context,title='Admin Dashboard', \
+        box1=box1,box2=box2,box3=box3)
+
+
+class DashboardBox:
+    def __init__(self,heading,subheading, number):
+        self.heading = heading
+        self.subheading = subheading
+        self.number = number

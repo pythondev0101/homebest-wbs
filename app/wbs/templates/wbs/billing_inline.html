@@ -1,0 +1,9 @@
+{% for i in inline.models %}
+<tr>
+    <td scope="row"><strong>{{i.id}}</strong></td>
+    <td>{{i.meter_no}}</td>
+    <td>{{i.previous_reading}}</td>
+    <td>{{i.present_reading}}</td>
+    <td>{{i.amount_due}}</td>
+</tr>
+{% endfor %}

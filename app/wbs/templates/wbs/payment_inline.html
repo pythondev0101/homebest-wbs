@@ -1,0 +1,7 @@
+{% for i in inline.models %}
+<tr>
+    <td scope="row"><strong>{{i.bill_id}}</strong></td>
+    <td>{{i.payment_date}}</td>
+    <td>{{i.amount_paid}}</td>
+</tr>
+{% endfor %}
